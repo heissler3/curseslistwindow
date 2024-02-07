@@ -201,16 +201,23 @@ class MultiColumnListWindow(SelectFromListWindow):
       among all with '0' value equally.
     """
 
-    def __init__(self, window, data, colwidths=[0]):
+    def __init__(self, window, data, colwidths=[0], border=False):
         super().__init__(window, data)
         self.colwidths = colwidths
         self.numcols = len(self.colwidths)
         self.subwin = [None for n in range(self.numcols)]
+        self.drawborder = border
 
     def draw_window(self):
         self.win.clear()
         (maxrows, maxcols) = self.win.getmaxyx()
         (dy, dx) = self.win.getbegyx()
+        if self.drawborder:
+            maxrows -= 2
+            maxcols -= 2
+            dy += 1
+            dx += 1
+            self.win.border()
         self.line_count = min(self.list_length, maxrows)
         self.width = maxcols
         widthsum = sum(self.colwidths)
@@ -223,16 +230,19 @@ class MultiColumnListWindow(SelectFromListWindow):
                 self.colwidths[c] = w
                 leftover -= w
                 divisor -= 1
-        for sw in range(self.numcols):
-            if self.subwin[sw]:
-                self.subwin[sw].resize(maxrows, self.colwidths[sw])
-                self.subwin[sw].mvwin(dy, dx)
+        for i, cols in enumerate(self.colwidths):
+            if self.subwin[i]:
+                self.subwin[i].resize(maxrows, cols)
+                self.subwin[i].mvwin(dy, dx)
             else:
-                # self.subwin[sw] = curses.subwin(maxrows, self.colwidths[sw], dy, dx)
-                self.subwin[sw] = curses.newwin(maxrows, self.colwidths[sw], dy, dx)
-            dx += self.colwidths[sw]
+                # self.subwin[i] = curses.subwin(maxrows, self.colwidths[i], dy, dx)
+                self.subwin[i] = curses.newwin(maxrows, cols, dy, dx)
+            dx += cols
             if dx < maxcols:
-                self.win.vline(0, dx, curses.ACS_VLINE, maxrows)
+                self.win.vline(1, dx, curses.ACS_VLINE, maxrows)
+                if self.drawborder:
+                    self.win.addch(0, dx, curses.ACS_TTEE)
+                    self.win.addch(maxrows+1, dx, curses.ACS_BTEE)
                 dx += 1
         self.win.noutrefresh()
         self.draw_list()
@@ -245,15 +255,15 @@ class MultiColumnListWindow(SelectFromListWindow):
         attr = (curses.color_pair(3)|curses.A_BOLD) if (index == self.current) else 0
         if self.selected[index]:
             attr |= color_pair(4)
-        for n in range(self.numcols):
-            self.subwin[n].move(line, 0)
-            self.subwin[n].clrtoeol()
-            if len(details[n]) > self.colwidths[n]:
-                self.subwin[n].insnstr(details[n], self.colwidths[n], attr)
-            elif len(details[n]) > 1:
-                self.subwin[n].insstr(details[n], attr)
+        for i, det in enumerate(details):
+            self.subwin[i].move(line, 0)
+            self.subwin[i].clrtoeol()
+            if len(det) > self.colwidths[i]:
+                self.subwin[i].insnstr(det, self.colwidths[i], attr)
+            elif len(det) > 1:
+                self.subwin[i].insstr(det, attr)
             else:
-                self.subwin[n].insch(details[n], attr)
+                self.subwin[i].insch(det, attr)
 
     def draw_list(self):
         if self.list_length > 0:
