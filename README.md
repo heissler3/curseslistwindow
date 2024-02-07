@@ -15,11 +15,17 @@ The interface is very simple:
 + Everything else passes through.
 
 ***SelectFromListWindow***(window, list)
+
     __window__ is a curses window
+
     __list__ is a list of strings
 
 ***MultiColumnListWindow***(window, data, colwidths, border)
+
     __window__ is an curses window
+
     __data__ is a list of lists (of strings)
+
     __colwidths__ is a list of integers, column width in chars, with 0 value meaning "divide remaining"
+
     __border__ is a boolean value of whether or not to draw a surrounding border.  Defaults to False
