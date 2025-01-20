@@ -1,10 +1,10 @@
-#
+
 # curseslistwindow.py
-#
+
 # Henry Eissler III
-#
-# July 14th, 2020
-#
+# version: 0.1.3
+# 1/18/2025
+
 import curses
 
 class SelectFromListWindow():
@@ -255,7 +255,7 @@ class MultiColumnListWindow(SelectFromListWindow):
             return
         attr = (curses.color_pair(3)|curses.A_BOLD) if (index == self.current) else 0
         if self.selected[index]:
-            attr |= color_pair(4)
+            attr |= curses.A_BOLD
         for i, det in enumerate(details):
             self.subwin[i].move(line, 0)
             self.subwin[i].clrtoeol()
