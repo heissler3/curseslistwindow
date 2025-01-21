@@ -2,7 +2,7 @@
 # curseslistwindow.py
 
 # Henry Eissler III
-# version: 0.1.3
+# version: 0.1.4
 # 1/18/2025
 
 import curses
@@ -30,6 +30,14 @@ class SelectFromListWindow():
         if self.drawborder:
             self.dy += 1
             self.dx += 1
+        # ensure that our highlight colors are initialized
+        if curses.has_colors():
+            if curses.pair_content(13) == (0, 0):           # current line
+                curses.init_pair(13, curses.COLOR_YELLOW, curses.COLOR_BLUE)
+            if curses.pair_content(14) == (0, 0):           # inverse current line (selected && current)
+                curses.init_pair(14, curses.COLOR_BLUE, curses.COLOR_YELLOW)
+            if curses.pair_content(15) == (0, 0):           # selected
+                curses.init_pair(15, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
     def draw_window(self):
         self.win.clear()
@@ -43,9 +51,12 @@ class SelectFromListWindow():
         line = index - self.offset
         if line < 0 or line > (self.line_count - 1):
             return
-        attr = (curses.color_pair(3)|curses.A_BOLD) if (index == self.current) else 0
+        attr = (curses.color_pair(13)|curses.A_BOLD) if (index == self.current) else 0
         if self.selected[index]:
-            attr |= curses.A_BOLD
+            if (index == self.current):
+                attr = curses.color_pair(14)|curses.A_BOLD
+            else:
+                attr = curses.color_pair(15)|curses.A_BOLD
         self.win.move(line, 0)
         self.win.clrtoeol()
         if len(outputstring) > self.width:
@@ -253,9 +264,12 @@ class MultiColumnListWindow(SelectFromListWindow):
         line = index - self.offset
         if line < 0 or line > (self.line_count - 1):
             return
-        attr = (curses.color_pair(3)|curses.A_BOLD) if (index == self.current) else 0
+        attr = (curses.color_pair(13)|curses.A_BOLD) if (index == self.current) else 0
         if self.selected[index]:
-            attr |= curses.A_BOLD
+            if (index == self.current):
+                attr = curses.color_pair(14)|curses.A_BOLD
+            else:
+                attr = curses.color_pair(15)|curses.A_BOLD
         for i, det in enumerate(details):
             self.subwin[i].move(line, 0)
             self.subwin[i].clrtoeol()
